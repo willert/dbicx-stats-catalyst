@@ -61,13 +61,13 @@ sub txn_commit {
 
 sub query_start {
   my ( $self, $sql, @params ) = @_;
-  $self->stats->profile( begin => ' -> ' . $self->model );
+  $self->stats->profile( begin   => $self->model . '->query' );
   $self->stats->profile( comment => $self->_format_sql( $sql ));
 }
 
 sub query_end {
   my ( $self, $sql, @params ) = @_;
-  $self->stats->profile( end => ' -> ' . $self->model );
+  $self->stats->profile( end     => $self->model . '->query' );
 }
 
 sub _format_sql {
@@ -75,7 +75,8 @@ sub _format_sql {
   my $sql = shift;
   ( my $shortend_sql = $sql ) =~ s{ SELECT \s (.*?) \s FROM }
      { 'SELECT ' . ( length $1 > 40 ? '..' : $1 ) . ' FROM' }xe;
-  my $depth = [ $self->stats->report ]->[ -1 ][ 0 ];
+  my $depth = @{[ $self->stats->report ]} ?
+    [ $self->stats->report ]->[ -1 ][ 0 ] : 0;
   my $prefix = ' ' x ( $depth + 5 );
 
   if ( length $shortend_sql > 60 ) {
